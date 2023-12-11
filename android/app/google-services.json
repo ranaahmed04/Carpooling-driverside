@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "317171059661",
+    "project_id": "carpooling-ainshams",
+    "storage_bucket": "carpooling-ainshams.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:317171059661:android:3e88cba38ee9de05b41284",
+        "android_client_info": {
+          "package_name": "com.example.proj_carpooling"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCo64lu3bx_5Q-xblpYGnG7stGhcSKRJ4o"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:317171059661:android:7663a69d7ed218f9b41284",
+        "android_client_info": {
+          "package_name": "com.example.project_driverside"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCo64lu3bx_5Q-xblpYGnG7stGhcSKRJ4o"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
