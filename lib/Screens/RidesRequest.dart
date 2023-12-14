@@ -1,22 +1,36 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 
 class RideRequests extends StatefulWidget {
-  final int pendingRequests;
+  final String rideid;
 
-  RideRequests({required this.pendingRequests});
+  RideRequests({required this.rideid});
 
   @override
   _RideRequestsState createState() => _RideRequestsState();
 }
 
 class _RideRequestsState extends State<RideRequests> {
-  final List<Map<String, String>> pendingRequests = [
-    {'name': 'Rana Ahmed', 'email': 'rana@example.com', 'phone': '123-456-7890', 'status': 'Pending'},
-    {'name': 'Ahmed mohamed', 'email': 'ahmed@example.com', 'phone': '987-654-3210', 'status': 'Approved'},
-    {'name': 'Alaa Hamdy', 'email': 'alaa@example.com', 'phone': '987-777-8880', 'status': 'Rejected'},
-    {'name': 'Rawda ahmed', 'email': 'rawda@example.com', 'phone': '997-444-8240', 'status': 'Pending'},
-    // Add more dummy data as needed
-  ];
+  late List<DocumentSnapshot> allrequests = [];
+
+  @override
+  void initState() {
+    super.initState();
+    fetchRequests();
+  }
+
+  Future<void> fetchRequests() async {
+    QuerySnapshot snapshot = await FirebaseFirestore.instance
+        .collection('requests')
+        .where('ride_id', isEqualTo: widget.rideid)
+        .where('status', isNotEqualTo: 'cart')
+        .get();
+
+    setState(() {
+      allrequests = snapshot.docs;
+    });
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -56,9 +70,9 @@ class _RideRequestsState extends State<RideRequests> {
               ListView.builder(
                 shrinkWrap: true, // Added this line
                 physics: NeverScrollableScrollPhysics(), // Added this line
-                itemCount: pendingRequests.length,
+                itemCount: allrequests.length,
                 itemBuilder: (BuildContext context, int index) {
-                  final request = pendingRequests[index];
+                  final request = allrequests[index];
                   void acceptRequest() {
                     setState(() {
                       request['status'] = 'Approved';
@@ -70,7 +84,7 @@ class _RideRequestsState extends State<RideRequests> {
                     });
                   }
 
-                  return buildRequestCard(request, acceptRequest, rejectRequest);
+                  return buildRequestCard(allrequests as Map<String, String>, acceptRequest, rejectRequest);
                 },
               ),
             ],

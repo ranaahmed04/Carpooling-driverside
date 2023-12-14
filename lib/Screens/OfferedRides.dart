@@ -1,4 +1,7 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 import 'package:project_driverside/Screens/Add ride.dart';
 import 'package:project_driverside/Screens/profile.dart';
 import 'package:project_driverside/Screens/login.dart';
@@ -10,42 +13,30 @@ class OfferedRides extends StatefulWidget {
 }
 
 class _OfferedRidesState extends State<OfferedRides> {
-  var rideList = <Map<String, dynamic>>[]; // Replace with actual data structure
-  String email = '';
+  List<DocumentSnapshot> rideList = [];
 
   @override
   void initState() {
-    email = 'example@email.com';
-    getDummyCartData();
     super.initState();
+    fetchRidesByDriverId();
   }
 
-  void getDummyCartData() {
-    final dummyData = <Map<String, dynamic>>[
-      {
-        'start': 'Ainshams univirsty',
-        'end': 'New cairo',
-        'time': '5:00 PM',
-        'email': 'user1@example.com',
-        'Date':'12/12/2023',
-        'id': 1,
-        'pendingRequests': 4, // Number of pending requests for this ride
-      },
-      {
-        'start': 'New cairo',
-        'end': 'Ainshams univirsty',
-        'time': '7:00 PM',
-        'email': 'user1@example.com',
-        'Date':'13/12/2023',
-        'id': 2,
-        'pendingRequests': 4, // Number of pending requests for this ride
-      },
-    ];
+  Future<void> fetchRidesByDriverId() async {
+    User? user = FirebaseAuth.instance.currentUser;
+    if (user != null) {
+      String currentUserId = user.uid;
 
-    setState(() {
-      rideList = dummyData;
-    });
+      QuerySnapshot snapshot = await FirebaseFirestore.instance
+          .collection('rides')
+          .where('driver_id', isEqualTo: currentUserId)
+          .get();
+
+      setState(() {
+        rideList = snapshot.docs;
+      });
+    }
   }
+
 
   @override
   Widget build(BuildContext context) {
@@ -104,7 +95,7 @@ class _OfferedRidesState extends State<OfferedRides> {
                             children: [
                               SizedBox(height: screenHeight * 0.001),
                               Text(
-                                '${rideList[index]['start']} To ${rideList[index]['end']}',
+                                '${rideList[index]['start_location']} To ${rideList[index]['end_location']}',
                                 style:  TextStyle(
                                   fontSize: MediaQuery.of(context).size.width * 0.04,
                               fontWeight: FontWeight.bold,
@@ -112,17 +103,17 @@ class _OfferedRidesState extends State<OfferedRides> {
                               ),
                               SizedBox(height: screenHeight * 0.001),
                               Text(
-                                '${rideList[index]['time']}',
+                                '${rideList[index]['selected_time']}',
                                 style: TextStyle(fontSize: screenWidth * 0.04, color: Colors.grey[600]),
                               ),
                               SizedBox(height: screenHeight * 0.001),
                               Text(
-                                'Date of trip: ${rideList[index]['Date']}',
+                                'Date of trip: ${DateFormat('dd.MM.yyyy').format(rideList[index]['ride_date'].toDate())}',
                                 style: TextStyle(fontSize: screenWidth * 0.04, color: Colors.grey[600]),
                               ),
                               SizedBox(height: screenHeight * 0.001),
                               Text(
-                                'Pending Requests: ${rideList[index]['pendingRequests']}',
+                                'Pending Requests: Tap to see',
                                 style: TextStyle(fontSize: screenWidth * 0.04, color: Colors.grey[600]),
                               ),
                               SizedBox(height: screenHeight * 0.001),
@@ -135,7 +126,8 @@ class _OfferedRidesState extends State<OfferedRides> {
                           ),
                           tileColor: Colors.purple.shade50,
                           onTap: () {
-                            navigateToRequests(rideList[index]);
+                            String rideId = rideList[index].id;
+                            navigateToRequests(rideId);
                           },
                         ),
                       ),
@@ -216,11 +208,11 @@ class _OfferedRidesState extends State<OfferedRides> {
     );
   }
 
-  void navigateToRequests(Map<String, dynamic> ride) {
+  void navigateToRequests(String rideId) {
     Navigator.push(context,
       PageRouteBuilder(
         pageBuilder: (context, animation, secondaryAnimation) {
-          return RideRequests(pendingRequests: ride['pendingRequests'] ?? 0);
+          return RideRequests(rideid: rideId);
         },
         transitionsBuilder: (context, animation, secondaryAnimation, child) {
           return SlideTransition(
