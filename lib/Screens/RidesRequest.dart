@@ -31,6 +31,74 @@ class _RideRequestsState extends State<RideRequests> {
     });
   }
 
+  Future<void> acceptRequest(DocumentSnapshot request) async {
+    await request.reference.update({'status': 'Accepted'});
+    fetchRequests(); // Refresh the list after updating
+  }
+
+  Future<void> rejectRequest(DocumentSnapshot request) async {
+    await request.reference.update({'status': 'Rejected'});
+    fetchRequests(); // Refresh the list after updating
+  }
+
+  Widget buildRequestCard(DocumentSnapshot request) {
+    final screenHeight = MediaQuery.of(context).size.height;
+    final screenWidth = MediaQuery.of(context).size.width;
+
+    final String status = request['status']; // Get the status
+
+    return Card(
+      elevation: 7,
+      margin: EdgeInsets.only(bottom: 25),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(screenWidth * 0.07),
+      ),
+      child: Padding(
+        padding: EdgeInsets.all(screenWidth * 0.01),
+        child: ListTile(
+          title: Text('${request['userName']}'),
+          subtitle: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Email: ${request['userEmail']}'),
+            ],
+          ),
+          trailing: status == 'pending' // Check if status is 'Pending'
+              ? Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              ElevatedButton(
+                onPressed: () => acceptRequest(request),
+                style: ElevatedButton.styleFrom(
+                  primary: Colors.green.shade400,
+                ),
+                child: Text('Accept'),
+              ),
+              SizedBox(width: 8),
+              ElevatedButton(
+                onPressed: () => rejectRequest(request),
+                style: ElevatedButton.styleFrom(
+                  primary: Colors.red.shade400,
+                ),
+                child: Text('Reject'),
+              ),
+            ],
+          )
+              : Chip(
+                   label: Text(
+                   status, // Show the status
+                    style: TextStyle(color: Colors.white),
+                       ),
+                      backgroundColor: status == 'Rejected'
+                        ? Colors.red.shade400
+                        : Colors.green.shade400,
+                      ),
+          tileColor: Colors.purple.shade50,
+        ),
+      ),
+    );
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -52,7 +120,7 @@ class _RideRequestsState extends State<RideRequests> {
               Container(
                 padding: EdgeInsets.all(screenWidth * 0.03),
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(screenWidth * 0.07), // Updated to screenWidth
+                  borderRadius: BorderRadius.circular(screenWidth * 0.07),
                 ),
                 child: Center(
                   child: Text(
@@ -68,23 +136,12 @@ class _RideRequestsState extends State<RideRequests> {
               ),
               SizedBox(height: screenHeight * 0.03),
               ListView.builder(
-                shrinkWrap: true, // Added this line
-                physics: NeverScrollableScrollPhysics(), // Added this line
+                shrinkWrap: true,
+                physics: NeverScrollableScrollPhysics(),
                 itemCount: allrequests.length,
                 itemBuilder: (BuildContext context, int index) {
                   final request = allrequests[index];
-                  void acceptRequest() {
-                    setState(() {
-                      request['status'] = 'Approved';
-                    });
-                  }
-                  void rejectRequest() {
-                    setState(() {
-                      request['status'] = 'Rejected';
-                    });
-                  }
-
-                  return buildRequestCard(allrequests as Map<String, String>, acceptRequest, rejectRequest);
+                  return buildRequestCard(request);
                 },
               ),
             ],
@@ -93,61 +150,4 @@ class _RideRequestsState extends State<RideRequests> {
       ),
     );
   }
-
-  // Method to build each individual request card
-  Widget buildRequestCard(Map<String, String> request, Function() acceptRequest, Function() rejectRequest) {
-    final screenHeight = MediaQuery.of(context).size.height;
-    final screenWidth = MediaQuery.of(context).size.width;
-
-    return Card(
-      elevation: 7,
-      margin: EdgeInsets.only(bottom: 25),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(screenWidth * 0.07), // Updated to screenWidth
-      ),
-      child: Padding(
-        padding: EdgeInsets.all(screenWidth * 0.01),
-        child: ListTile(
-          title: Text('${request['name']}'),
-          subtitle: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text('Email: ${request['email']}'),
-              Text('Phone: ${request['phone']}'),
-            ],
-          ),
-          trailing: request['status'] == 'Pending'
-              ? Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              ElevatedButton(
-                onPressed: acceptRequest,
-                style: ElevatedButton.styleFrom(
-                  primary: Colors.green.shade400,
-                ),
-                child: Text('Accept'),
-              ),
-              SizedBox(width: 8),
-              ElevatedButton(
-                onPressed: rejectRequest,
-                style: ElevatedButton.styleFrom(
-                  primary: Colors.red.shade400,
-                ),
-                child: Text('Reject'),
-              ),
-            ],
-          )
-              : Chip(
-            label: Text(
-              '${request['status']}',
-              style: TextStyle(color: Colors.white),
-            ),
-            backgroundColor: request['status'] == 'Rejected' ? Colors.red.shade400 : Colors.green.shade400,
-          ),
-          tileColor: Colors.purple.shade50,
-        ),
-      ),
-    );
-  }
 }
-
