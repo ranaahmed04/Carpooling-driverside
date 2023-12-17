@@ -12,13 +12,28 @@ class RideRequests extends StatefulWidget {
 
 class _RideRequestsState extends State<RideRequests> {
   late List<DocumentSnapshot> allrequests = [];
+  //DateTime? _selectedDate; // Variable to hold the selected date for filtering
 
   @override
   void initState() {
     super.initState();
     fetchRequests();
   }
+  // Function to open a date picker
+  /*Future<void> _selectDate(BuildContext context) async {
+    final DateTime? picked = await showDatePicker(
+      context: context,
+      initialDate: _selectedDate ?? DateTime.now(),
+      firstDate: DateTime(2023),
+      lastDate: DateTime(2060),
+    );
 
+    if (picked != null) {
+      setState(() {
+        _selectedDate = picked; // Set selected date
+      });
+    }
+  }*/
   Future<void> fetchRequests() async {
     QuerySnapshot snapshot = await FirebaseFirestore.instance
         .collection('requests')
@@ -224,6 +239,23 @@ class _RideRequestsState extends State<RideRequests> {
       appBar: AppBar(
         title: Text('Pending Requests'),
         centerTitle: true,
+        /*actions: <Widget>[
+          IconButton(
+            icon: Icon(Icons.search),
+            onPressed: () {
+              _selectDate(context);
+            },
+          ),
+          if (_selectedDate != null) // Show clear button only when date is selected
+            IconButton(
+              icon: Icon(Icons.clear),
+              onPressed: () {
+                setState(() {
+                  _selectedDate = null; // Clear selected date
+                });
+              },
+            ),
+        ],*/
         backgroundColor: Colors.purple,
       ),
       body: SingleChildScrollView(
@@ -256,6 +288,7 @@ class _RideRequestsState extends State<RideRequests> {
                 itemCount: allrequests.length,
                 itemBuilder: (BuildContext context, int index) {
                   final request = allrequests[index];
+
                   return buildRequestCard(request);
                 },
               ),

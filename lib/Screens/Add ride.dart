@@ -26,13 +26,29 @@ class _AddRideState extends State<AddRide> {
     String startLocation = StartLocationController.text.trim();
     String endLocation = EndLocationController.text.trim();
     String price = PriceController.text.trim();
+    String? selectedTime = selectedTimeNotifier.value;
+    String? selectedGate = selectedGateNotifier.value;
     DateTime? rideDate;
     try {
       rideDate = DateTime.parse(DateController.text.trim());
-      if (rideDate.isBefore(DateTime.now())) {
+
+      // Check if the selected date is today
+      bool isToday = rideDate.year == DateTime.now().year &&
+          rideDate.month == DateTime.now().month &&
+          rideDate.day == DateTime.now().day;
+
+      // Check if the current time is before 12:00 PM (noon)
+      bool isTimeBefore12PM = DateTime.now().hour < 12 ||
+          (DateTime.now().hour == 12 && DateTime.now().minute == 0);
+
+      if (isToday && isTimeBefore12PM && selectedTime == '5:30 PM') {
+        // Allow adding a ride as it's the same day and time is before 12:00 PM
+        // Add your logic here for adding the ride
+        print('Adding ride for today before 12:00 PM');
+      } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Please select a future date.'),
+            content: Text('You can only add a ride for today before 12:00 PM and for 5:30 trip.'),
             duration: Duration(seconds: 3),
           ),
         );
@@ -43,8 +59,6 @@ class _AddRideState extends State<AddRide> {
       // Handle the error if the string is not in a valid DateTime format
     }
 
-    String? selectedTime = selectedTimeNotifier.value;
-    String? selectedGate = selectedGateNotifier.value;
 
     if (selectedTime == null || selectedGate == null) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -94,7 +108,7 @@ class _AddRideState extends State<AddRide> {
             duration: Duration(seconds: 3),
           ),
         );
-      } else if (selectedTime == '5:30 AM' && endLocation.toLowerCase() == 'ain shams') {
+      } else if (selectedTime == '5:30 PM' && endLocation.toLowerCase() == 'ain shams') {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Trips at 5:30 AM should have Ain Shams as the start location, not the end.'),
