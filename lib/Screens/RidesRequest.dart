@@ -30,15 +30,131 @@ class _RideRequestsState extends State<RideRequests> {
       allrequests = snapshot.docs;
     });
   }
-
   Future<void> acceptRequest(DocumentSnapshot request) async {
-    await request.reference.update({'status': 'Accepted'});
-    fetchRequests(); // Refresh the list after updating
+    if (canAccept(request)) {
+      await request.reference.update({'status': 'Accepted'});
+      fetchRequests(); // Refresh the list after updating
+    } else {
+      // Show a dialog or message indicating the request cannot be accepted
+      showStatusErrorDialog(context, 'accept');
+    }
   }
 
   Future<void> rejectRequest(DocumentSnapshot request) async {
-    await request.reference.update({'status': 'Rejected'});
-    fetchRequests(); // Refresh the list after updating
+    if (canReject(request)) {
+      await request.reference.update({'status': 'Rejected'});
+      fetchRequests(); // Refresh the list after updating
+    } else {
+      // Show a dialog or message indicating the request cannot be rejected
+      showStatusErrorDialog(context, 'reject');
+    }
+  }
+
+  bool canAccept(DocumentSnapshot request) {
+    Timestamp? rideTimestamp = request['Ride_date'] as Timestamp?;
+    String? rideTimeString = request['Rideselected_time'] as String?;
+
+    if (rideTimestamp == null || rideTimeString == null) {
+      // Handle null values
+      print('Missing ride date or time.');
+      return false;
+    }
+
+    DateTime rideDateTime = rideTimestamp.toDate();
+    int rideDay = rideDateTime.day;
+    int rideMonth = rideDateTime.month;
+    int rideYear = rideDateTime.year;
+
+    List<String> timeComponents = rideTimeString.split(':');
+    int rideHour = int.parse(timeComponents[0]);
+    int rideMinute = int.parse(timeComponents[1].split(' ')[0]);
+
+    DateTime currentTime = DateTime.now();
+    DateTime reservationCutoff=DateTime.now();
+
+    if (rideHour < 7 || (rideHour == 7 && rideMinute <= 30)) {
+      reservationCutoff = DateTime(rideYear, rideMonth, rideDay - 1, 23, 30); // Before 11:30 PM of the previous day
+    } else if (rideHour < 17 || (rideHour == 17 && rideMinute <= 30)) {
+      reservationCutoff = DateTime(rideYear, rideMonth, rideDay, 16, 30); // Before 4:30 PM of the same day
+    }
+    bool isValid = currentTime.isBefore(reservationCutoff);
+
+    if (!isValid) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Reservation is overdue.'),
+        ),
+      );
+    }
+
+    return isValid;
+  }
+
+
+  bool canReject(DocumentSnapshot request) {
+    Timestamp? rideTimestamp = request['Ride_date'] as Timestamp?;
+    String? rideTimeString = request['Rideselected_time'] as String?;
+
+    if (rideTimestamp == null || rideTimeString == null) {
+      // Handle null values
+      print('Missing ride date or time.');
+      return false;
+    }
+
+    DateTime rideDateTime = rideTimestamp.toDate();
+    int rideDay = rideDateTime.day;
+    int rideMonth = rideDateTime.month;
+    int rideYear = rideDateTime.year;
+
+    List<String> timeComponents = rideTimeString.split(':');
+    int rideHour = int.parse(timeComponents[0]);
+    int rideMinute = int.parse(timeComponents[1].split(' ')[0]);
+
+    DateTime currentTime = DateTime.now();
+    DateTime reservationCutoff=DateTime.now();
+
+    if (rideHour < 7 || (rideHour == 7 && rideMinute <= 30)) {
+      // For rides before 7:30 AM
+      reservationCutoff = DateTime(rideYear, rideMonth, rideDay - 1, 23, 30); // Before 11:30 PM of the previous day
+    } else if (rideHour < 17 || (rideHour == 17 && rideMinute <= 30)) {
+      // For rides before 5:30 PM
+      reservationCutoff = DateTime(rideYear, rideMonth, rideDay, 16, 30); // Before 4:30 PM of the same day
+    }
+    bool isValid = currentTime.isBefore(reservationCutoff);
+
+    if (!isValid) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Reservation is overdue.'),
+        ),
+      );
+    }
+
+    return isValid;
+  }
+
+  void showStatusErrorDialog(BuildContext context, String action) {
+    String errorMessage = action == 'accept'
+        ? 'You cannot accept the request at this time.'
+        : 'You cannot reject the request at this time.';
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Status Error'),
+          content: Text(errorMessage),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: Text('OK'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   Widget buildRequestCard(DocumentSnapshot request) {
@@ -90,9 +206,7 @@ class _RideRequestsState extends State<RideRequests> {
                    status, // Show the status
                     style: TextStyle(color: Colors.white),
                        ),
-                      backgroundColor: status == 'Rejected'
-                        ? Colors.red.shade400
-                        : Colors.green.shade400,
+                      backgroundColor: getStatusColor(status), // Get color based on status
                       ),
           tileColor: Colors.purple.shade50,
         ),
@@ -150,5 +264,19 @@ class _RideRequestsState extends State<RideRequests> {
         ),
       ),
     );
+  }
+  Color getStatusColor(String status) {
+    switch (status.toLowerCase()) {
+      case 'rejected':
+        return Colors.red.shade400;
+      case 'accepted':
+        return Colors.green.shade400;
+      case 'completed':
+        return Colors.purple;
+      case 'expired':
+        return Colors.black54;
+      default:
+        return Colors.grey.shade400;
+    }
   }
 }
