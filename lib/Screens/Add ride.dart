@@ -87,10 +87,26 @@ class _AddRideState extends State<AddRide> {
             duration: Duration(seconds: 3),
           ),
         );
-      } else {
+      }else if (selectedTime == '7:30 AM' && startLocation.toLowerCase() == 'ain shams') {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Trips at 7:30 AM should have Ain Shams as the end location, not the start.'),
+            duration: Duration(seconds: 3),
+          ),
+        );
+      } else if (selectedTime == '5:30 AM' && endLocation.toLowerCase() == 'ain shams') {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Trips at 5:30 AM should have Ain Shams as the start location, not the end.'),
+            duration: Duration(seconds: 3),
+          ),
+        );
+
+      }else {
         if (_currentUser != null) {
           QuerySnapshot ridesSnapshot = await firestore
               .collection('rides')
+              .where('driver_id',isEqualTo: _currentUser?.uid)
               .where('ride_date', isEqualTo: rideDate)
               .where('selected_time', isEqualTo: selectedTime)
               .get();
@@ -98,7 +114,7 @@ class _AddRideState extends State<AddRide> {
           if (ridesSnapshot.docs.isNotEmpty) {
             ScaffoldMessenger.of(context).showSnackBar(
               SnackBar(
-                content: Text('A ride already exists at this date and time.'),
+                content: Text('A ride already exists at this date and time for this user.'),
                 duration: Duration(seconds: 3),
               ),
             );
@@ -147,7 +163,7 @@ class _AddRideState extends State<AddRide> {
   void initState() {
     super.initState();
     _getCurrentUser();
-    selectedTimeNotifier = ValueNotifier<String?>('7:00 AM');
+    selectedTimeNotifier = ValueNotifier<String?>('7:30 AM');
     selectedGateNotifier = ValueNotifier<String?>('Gate 3');
   }
   void _getCurrentUser() {
@@ -251,12 +267,12 @@ class _AddRideState extends State<AddRide> {
                       ),
                       items: [
                         DropdownMenuItem(
-                          value: '7:00 AM',
-                          child: Text('7:00 AM'),
+                          value: '7:30 AM',
+                          child: Text('7:30 AM'),
                         ),
                         DropdownMenuItem(
-                          value: '5:00 PM',
-                          child: Text('5:00 PM'),
+                          value: '5:30 PM',
+                          child: Text('5:30 PM'),
                         ),
                       ],
                       onChanged: (value) {
