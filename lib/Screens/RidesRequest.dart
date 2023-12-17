@@ -61,6 +61,7 @@ class _RideRequestsState extends State<RideRequests> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text('Email: ${request['userEmail']}'),
+              Text('Phone: ${request['userphone']}'),
             ],
           ),
           trailing: status == 'pending' // Check if status is 'Pending'
