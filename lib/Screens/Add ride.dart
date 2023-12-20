@@ -248,7 +248,20 @@ class _AddRideState extends State<AddRide> {
                   color: Colors.purple,
                 ),
                 SizedBox(height: screenHeight * 0.03),
+                Container(
+                  alignment: Alignment.center,
+                  padding: EdgeInsets.all(screenWidth * 0.03),
+                  child: const Text(
+                    'Either start or end should in format Ain shams',
+                    style: TextStyle(
+                      color: Colors.purple,
+                      fontWeight: FontWeight.w600,
+                      fontSize: 18,
+                    ),
+                  ),
 
+                ),
+                SizedBox(height: screenHeight * 0.03),
                 RoundedInputField(
                   key: const ValueKey('start'),
                   hintText: "Enter Start Location",
