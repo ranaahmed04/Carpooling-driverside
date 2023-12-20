@@ -66,6 +66,14 @@ class _RideRequestsState extends State<RideRequests> {
   }
 
   bool canAccept(DocumentSnapshot request) {
+
+    // Email for which you want to bypass the restrictions
+    String allowedEmail = 'testdriver@eng.asu.edu.eg';
+
+    // Check if the user's email matches the allowed email
+    if (request['Ridedriver_email'] == allowedEmail) {
+      return true; // Allow this email to bypass restrictions
+    }
     Timestamp? rideTimestamp = request['Ride_date'] as Timestamp?;
     String? rideTimeString = request['Rideselected_time'] as String?;
 
@@ -107,6 +115,14 @@ class _RideRequestsState extends State<RideRequests> {
 
 
   bool canReject(DocumentSnapshot request) {
+
+    // Email for which you want to bypass the restrictions
+    String allowedEmail = 'testdriver@eng.asu.edu.eg';
+
+    // Check if the user's email matches the allowed email
+    if (request['Ridedriver_email'] == allowedEmail) {
+      return true; // Allow this email to bypass restrictions
+    }
     Timestamp? rideTimestamp = request['Ride_date'] as Timestamp?;
     String? rideTimeString = request['Rideselected_time'] as String?;
 
