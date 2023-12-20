@@ -22,6 +22,12 @@ class _AddRideState extends State<AddRide> {
   late ValueNotifier<String?> selectedGateNotifier;
   User? _currentUser;
 
+  void signOutUser() async {
+    FirebaseAuth auth = FirebaseAuth.instance;
+    await auth.signOut();
+    print('User signed out');
+  }
+
   void _addRideToFirestore() async {
     String startLocation = StartLocationController.text.trim();
     String endLocation = EndLocationController.text.trim();
@@ -30,7 +36,17 @@ class _AddRideState extends State<AddRide> {
     String? selectedGate = selectedGateNotifier.value;
     DateTime? rideDate;
     try {
+
       rideDate = DateTime.parse(DateController.text.trim());
+      if (rideDate.isBefore(DateTime.now())) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Please choose a future date.'),
+            duration: Duration(seconds: 3),
+          ),
+        );
+        return;
+      }
 
       // Check if the selected date is today
       bool isToday = rideDate.year == DateTime.now().year &&
@@ -45,14 +61,15 @@ class _AddRideState extends State<AddRide> {
         // Allow adding a ride as it's the same day and time is before 12:00 PM
         // Add your logic here for adding the ride
         print('Adding ride for today before 12:00 PM');
-      } else {
+      } else if (!isToday && rideDate.isAfter(DateTime.now())){
+        print('Added ride');
+      }else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('You can only add a ride for today before 12:00 PM and for 5:30 trip.'),
             duration: Duration(seconds: 3),
           ),
         );
-        return;
       }
     } catch (e) {
       print("Error parsing date: $e");
@@ -111,12 +128,19 @@ class _AddRideState extends State<AddRide> {
       } else if (selectedTime == '5:30 PM' && endLocation.toLowerCase() == 'ain shams') {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Trips at 5:30 AM should have Ain Shams as the start location, not the end.'),
+            content: Text(
+                'Trips at 5:30 AM should have Ain Shams as the start location, not the end.'),
             duration: Duration(seconds: 3),
           ),
         );
-
-      }else {
+      } else if (rideDate==null) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('you should choose date '),
+            duration: Duration(seconds: 3),
+          ),
+        );
+      } else {
         if (_currentUser != null) {
           QuerySnapshot ridesSnapshot = await firestore
               .collection('rides')
@@ -410,6 +434,7 @@ class _AddRideState extends State<AddRide> {
                 },
               ),);
           } else if (i == 3) {
+            signOutUser();
             Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => SignInPage()),
                   (route) => false,
             );

@@ -20,7 +20,11 @@ class _OfferedRidesState extends State<OfferedRides> {
     super.initState();
     fetchRidesByDriverId();
   }
-
+  void signOutUser() async {
+    FirebaseAuth auth = FirebaseAuth.instance;
+    await auth.signOut();
+    print('User signed out');
+  }
   Future<void> fetchRidesByDriverId() async {
     User? user = FirebaseAuth.instance.currentUser;
     if (user != null) {
@@ -49,7 +53,8 @@ class _OfferedRidesState extends State<OfferedRides> {
         backgroundColor: Colors.purple,
         centerTitle: true,
       ),
-      body: SingleChildScrollView(
+      body: Padding(
+        padding: const EdgeInsets.all(8.0),
         child: Container(
           width: MediaQuery.of(context).size.width,
           height: MediaQuery.of(context).size.height,
@@ -108,7 +113,7 @@ class _OfferedRidesState extends State<OfferedRides> {
                               ),
                               SizedBox(height: screenHeight * 0.001),
                               Text(
-                                'Date of trip: ${DateFormat('dd.MM.yyyy').format(rideList[index]['ride_date'].toDate())}',
+                               'Date of trip: ${DateFormat('dd.MM.yyyy').format(rideList[index]['ride_date'].toDate())}',
                                 style: TextStyle(fontSize: screenWidth * 0.04, color: Colors.grey[600]),
                               ),
                               SizedBox(height: screenHeight * 0.001),
@@ -145,6 +150,7 @@ class _OfferedRidesState extends State<OfferedRides> {
         type: BottomNavigationBarType.fixed,
         onTap: (i) {
           if (i == 3) {
+            signOutUser();
             Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => SignInPage()),
                   (route) => false,
             );

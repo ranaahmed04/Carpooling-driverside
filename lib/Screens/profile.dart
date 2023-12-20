@@ -26,6 +26,12 @@ class _HomePageState extends State<HomePage> {
   late String userId;
   DatabaseService _databaseService = DatabaseService();
 
+  void signOutUser() async {
+    FirebaseAuth auth = FirebaseAuth.instance;
+    await auth.signOut();
+    print('User signed out');
+  }
+
   @override
   void initState() {
     super.initState();
@@ -308,6 +314,7 @@ class _HomePageState extends State<HomePage> {
         type: BottomNavigationBarType.fixed,
         onTap: (i) {
           if (i == 3) {
+            signOutUser();
             Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => SignInPage()),
                   (route) => false,
             );
