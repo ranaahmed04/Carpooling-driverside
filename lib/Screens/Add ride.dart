@@ -38,7 +38,21 @@ class _AddRideState extends State<AddRide> {
     try {
 
       rideDate = DateTime.parse(DateController.text.trim());
-      if (rideDate.isBefore(DateTime.now())) {
+      // Extracting the year, month, and day of the ride date
+      int rideYear = rideDate.year;
+      int rideMonth = rideDate.month;
+      int rideDay = rideDate.day;
+
+      // Extracting the current year, month, and day
+      DateTime currentDate = DateTime.now();
+      int currentYear = currentDate.year;
+      int currentMonth = currentDate.month;
+      int currentDay = currentDate.day;
+
+      // Compare only year, month, and day
+      if (rideYear < currentYear ||
+          (rideYear == currentYear && rideMonth < currentMonth) ||
+          (rideYear == currentYear && rideMonth == currentMonth && rideDay < currentDay)) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Please choose a future date.'),
