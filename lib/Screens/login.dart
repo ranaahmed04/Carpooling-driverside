@@ -165,7 +165,7 @@ class _State extends State<SignInPage> {
             ),
             SizedBox(height: 10),
             TextButton(
-              onPressed: () {
+              onPressed: () {/*
                 Navigator.push(
                   context,
                   PageRouteBuilder(
@@ -182,7 +182,7 @@ class _State extends State<SignInPage> {
                       );
                     },
                   ),
-                );
+                );*/
 
               },
               style: TextButton.styleFrom(primary: Colors.purple),
