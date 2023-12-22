@@ -19,30 +19,51 @@ class _RideRequestsState extends State<RideRequests> {
     super.initState();
     fetchRequests();
   }
-  // Function to open a date picker
-  /*Future<void> _selectDate(BuildContext context) async {
-    final DateTime? picked = await showDatePicker(
-      context: context,
-      initialDate: _selectedDate ?? DateTime.now(),
-      firstDate: DateTime(2023),
-      lastDate: DateTime(2060),
-    );
-
-    if (picked != null) {
-      setState(() {
-        _selectedDate = picked; // Set selected date
-      });
-    }
-  }*/
   Future<void> fetchRequests() async {
     QuerySnapshot snapshot = await FirebaseFirestore.instance
+        .collection('requests')
+        .where('status', isNotEqualTo: 'cart')
+        .get();
+
+    List<DocumentSnapshot> allRequests = snapshot.docs;
+    DateTime currentTime = DateTime.now();
+
+    for (DocumentSnapshot request in allRequests) {
+      final rideDate = (request['Ride_date'] as Timestamp).toDate();
+      final rideTime = request['Rideselected_time'] as String;
+      DateTime rideDateTime = DateTime(rideDate.year, rideDate.month, rideDate.day);
+
+      // Parse the selected time string to get the time components
+      final timeComponents = rideTime.split(':');
+      final int hours = int.parse(timeComponents[0]);
+      final int minutes = int.parse(timeComponents[1].split(' ')[0]);
+
+      rideDateTime = rideDateTime.add(Duration(hours: hours, minutes: minutes));
+
+      final rideStatus = request['status'];
+
+      // Check if the request has a ride date and the status is 'pending' or 'accepted'
+      if (rideDateTime != null && (rideStatus == 'pending' || rideStatus == 'Accepted')) {
+
+        if (currentTime.isAfter(rideDateTime)) {
+          // Trip date has passed
+          if (rideStatus == 'pending') {
+            await request.reference.update({'status': 'Expired'});
+          } else if (rideStatus == 'accepted') {
+            await request.reference.update({'status': 'Completed'});
+          }
+        }
+      }
+    }
+    // Refresh the list after updating statuses
+    QuerySnapshot snapshot2 = await FirebaseFirestore.instance
         .collection('requests')
         .where('ride_id', isEqualTo: widget.rideid)
         .where('status', isNotEqualTo: 'cart')
         .get();
 
     setState(() {
-      allrequests = snapshot.docs;
+      allrequests = snapshot2.docs;
     });
   }
   Future<void> acceptRequest(DocumentSnapshot request) async {
