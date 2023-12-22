@@ -153,9 +153,8 @@ class _State extends State<SignupPage> {
         // Add more fields as needed
       });
 
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (context) => HomePage()),
+      Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (context) => HomePage()),
+            (route) => false,
       );
     } catch (e) {
       // Firebase createUserWithEmailAndPassword failed, handle the error
