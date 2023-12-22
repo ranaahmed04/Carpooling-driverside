@@ -35,7 +35,8 @@ class _RideRequestsState extends State<RideRequests> {
 
       // Parse the selected time string to get the time components
       final timeComponents = rideTime.split(':');
-      final int hours = int.parse(timeComponents[0]);
+       int hours = int.parse(timeComponents[0]);
+      hours=hours+12;
       final int minutes = int.parse(timeComponents[1].split(' ')[0]);
 
       rideDateTime = rideDateTime.add(Duration(hours: hours, minutes: minutes));
